@@ -404,20 +404,3 @@ npm run lint:fix
 npm run format
 npm run format:check
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Run linting and tests
-6. Submit a pull request
-
-## License
-
-MIT
-
-## Support
-
-For issues and questions, please open an issue on the GitHub repository or contact the Alloprof development team.
