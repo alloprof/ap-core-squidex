@@ -59,7 +59,7 @@ export class HttpClient {
    */
   async post<T>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<T> {
     const response = await this.axiosInstance.post<T>(url, data, config);
@@ -71,7 +71,7 @@ export class HttpClient {
    */
   async put<T>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<T> {
     const response = await this.axiosInstance.put<T>(url, data, config);
@@ -83,7 +83,7 @@ export class HttpClient {
    */
   async patch<T>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<T> {
     const response = await this.axiosInstance.patch<T>(url, data, config);

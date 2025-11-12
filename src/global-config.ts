@@ -1,5 +1,5 @@
-import { SquidexConfig } from './types/config';
 import { SquidexClient } from './client/squidex-client';
+import { SquidexConfig } from './types/config';
 
 /**
  * Global Squidex client instance

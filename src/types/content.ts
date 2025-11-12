@@ -1,7 +1,23 @@
 /**
+ * Base type for Squidex data field values
+ */
+export type SquidexFieldValue =
+  | string
+  | number
+  | boolean
+  | null
+  | SquidexFieldValue[]
+  | { [key: string]: SquidexFieldValue };
+
+/**
+ * Base type for Squidex content data
+ */
+export type SquidexData = Record<string, SquidexFieldValue>;
+
+/**
  * Base structure for Squidex content items
  */
-export interface SquidexContent<T = Record<string, any>> {
+export interface SquidexContent<T = SquidexData> {
   /**
    * Unique content ID
    */
@@ -51,7 +67,7 @@ export interface SquidexContent<T = Record<string, any>> {
 /**
  * Response for listing content items
  */
-export interface SquidexContentList<T = Record<string, any>> {
+export interface SquidexContentList<T = SquidexData> {
   /**
    * Total number of items matching the query
    */

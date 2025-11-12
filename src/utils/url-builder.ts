@@ -69,7 +69,10 @@ export class UrlBuilder {
   /**
    * Build URL with query parameters
    */
-  buildUrlWithParams(baseUrl: string, params: Record<string, any>): string {
+  buildUrlWithParams(
+    baseUrl: string,
+    params: Record<string, string | number | boolean>
+  ): string {
     const queryParams = new URLSearchParams();
 
     Object.entries(params).forEach(([key, value]) => {

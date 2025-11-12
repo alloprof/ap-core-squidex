@@ -2,6 +2,7 @@ import { getClient } from './global-config';
 import {
   SquidexContent,
   SquidexContentList,
+  SquidexData,
   CreateContentOptions,
   UpdateContentOptions,
   DeleteContentOptions,
@@ -22,7 +23,7 @@ import { SquidexQuery, QueryBuilder } from './types/query';
  * });
  * ```
  */
-export async function getContent<T = Record<string, any>>(
+export async function getContent<T = SquidexData>(
   schema: string,
   query?: SquidexQuery
 ): Promise<SquidexContentList<T>> {
@@ -41,7 +42,7 @@ export async function getContent<T = Record<string, any>>(
  * const content = await getContentById('questions', 'abc123');
  * ```
  */
-export async function getContentById<T = Record<string, any>>(
+export async function getContentById<T = SquidexData>(
   schema: string,
   id: string
 ): Promise<SquidexContent<T>> {
@@ -63,7 +64,7 @@ export async function getContentById<T = Record<string, any>>(
  * }, { publish: true });
  * ```
  */
-export async function createContent<T = Record<string, any>>(
+export async function createContent<T = SquidexData>(
   schema: string,
   data: T,
   options?: CreateContentOptions
@@ -87,7 +88,7 @@ export async function createContent<T = Record<string, any>>(
  * });
  * ```
  */
-export async function updateContent<T = Record<string, any>>(
+export async function updateContent<T = SquidexData>(
   schema: string,
   id: string,
   data: Partial<T>,
@@ -128,7 +129,7 @@ export async function deleteContent(
  * await publishContent('questions', 'abc123');
  * ```
  */
-export async function publishContent<T = Record<string, any>>(
+export async function publishContent<T = SquidexData>(
   schema: string,
   id: string
 ): Promise<SquidexContent<T>> {
@@ -147,7 +148,7 @@ export async function publishContent<T = Record<string, any>>(
  * await unpublishContent('questions', 'abc123');
  * ```
  */
-export async function unpublishContent<T = Record<string, any>>(
+export async function unpublishContent<T = SquidexData>(
   schema: string,
   id: string
 ): Promise<SquidexContent<T>> {
@@ -166,7 +167,7 @@ export async function unpublishContent<T = Record<string, any>>(
  * await archiveContent('questions', 'abc123');
  * ```
  */
-export async function archiveContent<T = Record<string, any>>(
+export async function archiveContent<T = SquidexData>(
   schema: string,
   id: string
 ): Promise<SquidexContent<T>> {
@@ -185,7 +186,7 @@ export async function archiveContent<T = Record<string, any>>(
  * await restoreContent('questions', 'abc123');
  * ```
  */
-export async function restoreContent<T = Record<string, any>>(
+export async function restoreContent<T = SquidexData>(
   schema: string,
   id: string
 ): Promise<SquidexContent<T>> {
