@@ -1,5 +1,6 @@
 import { AxiosError } from 'axios';
 import {
+  ErrorDetails,
   SquidexError,
   SquidexAuthError,
   SquidexNotFoundError,
@@ -16,6 +17,7 @@ export function handleSquidexError(error: unknown): never {
   if (isAxiosError(error)) {
     const statusCode = error.response?.status;
     const data = error.response?.data;
+    const errorDetails = toErrorDetails(data);
     const message = extractErrorMessage(data) || error.message;
 
     // Map status codes to specific error types
@@ -24,25 +26,25 @@ export function handleSquidexError(error: unknown): never {
       case 403:
         throw new SquidexAuthError(
           message || 'Authentication failed',
-          data
+          errorDetails
         );
 
       case 404:
         throw new SquidexNotFoundError(
           message || 'Resource not found',
-          data
+          errorDetails
         );
 
       case 400:
         throw new SquidexValidationError(
           message || 'Validation error',
-          data
+          errorDetails
         );
 
       case 429:
         throw new SquidexRateLimitError(
           message || 'Rate limit exceeded',
-          data
+          errorDetails
         );
 
       case 500:
@@ -52,7 +54,7 @@ export function handleSquidexError(error: unknown): never {
         throw new SquidexError(
           message || 'Server error',
           statusCode,
-          data,
+          errorDetails,
           true // retryable
         );
 
@@ -61,7 +63,7 @@ export function handleSquidexError(error: unknown): never {
           throw new SquidexError(
             message || 'Unknown error',
             statusCode,
-            data,
+            errorDetails,
             false
           );
         }
@@ -69,13 +71,10 @@ export function handleSquidexError(error: unknown): never {
 
     // Network error (no response)
     if (error.request && !error.response) {
-      throw new SquidexNetworkError(
-        'Network error: No response from server',
-        {
-          message: error.message,
-          code: error.code,
-        }
-      );
+      throw new SquidexNetworkError('Network error: No response from server', {
+        message: error.message,
+        code: error.code || '',
+      });
     }
   }
 
@@ -88,14 +87,31 @@ export function handleSquidexError(error: unknown): never {
   throw new SquidexError(
     error instanceof Error ? error.message : 'Unknown error occurred',
     undefined,
-    error
+    toErrorDetails(error)
   );
+}
+
+/**
+ * Type guard to check if value is ErrorDetails
+ */
+function isErrorDetails(value: unknown): value is ErrorDetails {
+  return typeof value === 'object' && value !== null;
+}
+
+/**
+ * Safely convert unknown data to ErrorDetails
+ */
+function toErrorDetails(data: unknown): ErrorDetails | undefined {
+  if (!data) return undefined;
+  if (typeof data === 'string') return { message: data };
+  if (isErrorDetails(data)) return data;
+  return undefined;
 }
 
 /**
  * Extract error message from Squidex API response
  */
-function extractErrorMessage(data: any): string | undefined {
+function extractErrorMessage(data: unknown): string | undefined {
   if (!data) return undefined;
 
   // Squidex typically returns errors in this format
@@ -103,22 +119,40 @@ function extractErrorMessage(data: any): string | undefined {
     return data;
   }
 
-  if (data.message) {
+  if (!isErrorDetails(data)) return undefined;
+
+  if ('message' in data && typeof data.message === 'string') {
     return data.message;
   }
 
-  if (data.error) {
-    if (typeof data.error === 'string') {
-      return data.error;
+  if ('error' in data) {
+    const error = data.error;
+    if (typeof error === 'string') {
+      return error;
     }
-    if (data.error.message) {
-      return data.error.message;
+    if (
+      isErrorDetails(error) &&
+      'message' in error &&
+      typeof error.message === 'string'
+    ) {
+      return error.message;
     }
   }
 
   // Handle validation errors
-  if (data.details && Array.isArray(data.details)) {
-    return data.details.map((d: any) => d.message || d).join(', ');
+  if ('details' in data && Array.isArray(data.details)) {
+    return data.details
+      .map((d) => {
+        if (typeof d === 'string') return d;
+        if (
+          isErrorDetails(d) &&
+          'message' in d &&
+          typeof d.message === 'string'
+        )
+          return d.message;
+        return String(d);
+      })
+      .join(', ');
   }
 
   return undefined;

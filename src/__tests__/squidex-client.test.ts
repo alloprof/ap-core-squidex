@@ -1,9 +1,9 @@
 import { SquidexClient } from '../client/squidex-client';
-import { SquidexClientConfig } from '../types/config';
+import { SquidexConfig } from '../types/config';
 
 describe('SquidexClient', () => {
   let client: SquidexClient;
-  let config: SquidexClientConfig;
+  let config: SquidexConfig;
 
   beforeEach(() => {
     config = {

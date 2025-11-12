@@ -1,4 +1,17 @@
 /**
+ * Type for error details from API responses
+ */
+export interface ErrorDetails {
+  [key: string]:
+    | string
+    | number
+    | boolean
+    | null
+    | ErrorDetails
+    | ErrorDetails[];
+}
+
+/**
  * Custom error class for Squidex-related errors
  */
 export class SquidexError extends Error {
@@ -10,7 +23,7 @@ export class SquidexError extends Error {
   /**
    * Error details from Squidex API
    */
-  public readonly details?: any;
+  public readonly details?: ErrorDetails;
 
   /**
    * Whether the error is retryable
@@ -20,7 +33,7 @@ export class SquidexError extends Error {
   constructor(
     message: string,
     statusCode?: number,
-    details?: any,
+    details?: ErrorDetails,
     retryable: boolean = false
   ) {
     super(message);
@@ -40,7 +53,7 @@ export class SquidexError extends Error {
  * Authentication error
  */
 export class SquidexAuthError extends SquidexError {
-  constructor(message: string, details?: any) {
+  constructor(message: string, details?: ErrorDetails) {
     super(message, 401, details, false);
     this.name = 'SquidexAuthError';
   }
@@ -50,7 +63,7 @@ export class SquidexAuthError extends SquidexError {
  * Not found error
  */
 export class SquidexNotFoundError extends SquidexError {
-  constructor(message: string, details?: any) {
+  constructor(message: string, details?: ErrorDetails) {
     super(message, 404, details, false);
     this.name = 'SquidexNotFoundError';
   }
@@ -60,7 +73,7 @@ export class SquidexNotFoundError extends SquidexError {
  * Validation error
  */
 export class SquidexValidationError extends SquidexError {
-  constructor(message: string, details?: any) {
+  constructor(message: string, details?: ErrorDetails) {
     super(message, 400, details, false);
     this.name = 'SquidexValidationError';
   }
@@ -70,7 +83,7 @@ export class SquidexValidationError extends SquidexError {
  * Rate limit error
  */
 export class SquidexRateLimitError extends SquidexError {
-  constructor(message: string, details?: any) {
+  constructor(message: string, details?: ErrorDetails) {
     super(message, 429, details, true);
     this.name = 'SquidexRateLimitError';
   }
@@ -80,7 +93,7 @@ export class SquidexRateLimitError extends SquidexError {
  * Network error
  */
 export class SquidexNetworkError extends SquidexError {
-  constructor(message: string, details?: any) {
+  constructor(message: string, details?: ErrorDetails) {
     super(message, undefined, details, true);
     this.name = 'SquidexNetworkError';
   }

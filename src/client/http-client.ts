@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import axiosRetry from 'axios-retry';
-import { SquidexClientConfig } from '../types/config';
+import { SquidexConfig } from '../types/config';
 import { handleSquidexError, isRetryableError } from '../utils/error-handler';
 
 /**
@@ -8,8 +8,10 @@ import { handleSquidexError, isRetryableError } from '../utils/error-handler';
  */
 export class HttpClient {
   private axiosInstance: AxiosInstance;
+  private app: string;
 
-  constructor(config: SquidexClientConfig) {
+  constructor(config: SquidexConfig) {
+    this.app = config.app;
 
     this.axiosInstance = axios.create({
       baseURL: config.apiBaseUrl,
@@ -17,6 +19,9 @@ export class HttpClient {
       headers: {
         'Content-Type': 'application/json',
         ...config.headers,
+      },
+      params: {
+        app: this.app,
       },
     });
 
@@ -54,7 +59,7 @@ export class HttpClient {
    */
   async post<T>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<T> {
     const response = await this.axiosInstance.post<T>(url, data, config);
@@ -66,7 +71,7 @@ export class HttpClient {
    */
   async put<T>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<T> {
     const response = await this.axiosInstance.put<T>(url, data, config);
@@ -78,7 +83,7 @@ export class HttpClient {
    */
   async patch<T>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<T> {
     const response = await this.axiosInstance.patch<T>(url, data, config);

@@ -1,8 +1,9 @@
 import { ContentService } from '../services/content.service';
-import { SquidexClientConfig } from '../types/config';
+import { SquidexConfig } from '../types/config';
 import {
   SquidexContent,
   SquidexContentList,
+  SquidexData,
   CreateContentOptions,
   UpdateContentOptions,
   DeleteContentOptions,
@@ -16,13 +17,13 @@ import { HttpClient } from './http-client';
 export class SquidexClient {
   private httpClient: HttpClient;
   private contentService: ContentService;
-  private config: SquidexClientConfig;
+  private config: SquidexConfig;
 
   /**
    * Create a new Squidex client instance
    * @param config - Client configuration
    */
-  constructor(config: SquidexClientConfig) {
+  constructor(config: SquidexConfig) {
     this.config = config;
     this.httpClient = new HttpClient(config);
     this.contentService = new ContentService(this.httpClient);
@@ -36,7 +37,7 @@ export class SquidexClient {
    * @param query - Optional query parameters
    * @returns List of content items
    */
-  async getContent<T = Record<string, any>>(
+  async getContent<T = SquidexData>(
     schema: string,
     query?: SquidexQuery
   ): Promise<SquidexContentList<T>> {
@@ -49,7 +50,7 @@ export class SquidexClient {
    * @param id - Content ID
    * @returns Content item
    */
-  async getContentById<T = Record<string, any>>(
+  async getContentById<T = SquidexData>(
     schema: string,
     id: string
   ): Promise<SquidexContent<T>> {
@@ -63,7 +64,7 @@ export class SquidexClient {
    * @param options - Create options
    * @returns Created content item
    */
-  async createContent<T = Record<string, any>>(
+  async createContent<T = SquidexData>(
     schema: string,
     data: T,
     options?: CreateContentOptions
@@ -79,7 +80,7 @@ export class SquidexClient {
    * @param options - Update options
    * @returns Updated content item
    */
-  async updateContent<T = Record<string, any>>(
+  async updateContent<T = SquidexData>(
     schema: string,
     id: string,
     data: Partial<T>,
@@ -108,7 +109,7 @@ export class SquidexClient {
    * @param id - Content ID
    * @returns Updated content item
    */
-  async publishContent<T = Record<string, any>>(
+  async publishContent<T = SquidexData>(
     schema: string,
     id: string
   ): Promise<SquidexContent<T>> {
@@ -121,7 +122,7 @@ export class SquidexClient {
    * @param id - Content ID
    * @returns Updated content item
    */
-  async unpublishContent<T = Record<string, any>>(
+  async unpublishContent<T = SquidexData>(
     schema: string,
     id: string
   ): Promise<SquidexContent<T>> {
@@ -134,7 +135,7 @@ export class SquidexClient {
    * @param id - Content ID
    * @returns Updated content item
    */
-  async archiveContent<T = Record<string, any>>(
+  async archiveContent<T = SquidexData>(
     schema: string,
     id: string
   ): Promise<SquidexContent<T>> {
@@ -147,7 +148,7 @@ export class SquidexClient {
    * @param id - Content ID
    * @returns Updated content item
    */
-  async restoreContent<T = Record<string, any>>(
+  async restoreContent<T = SquidexData>(
     schema: string,
     id: string
   ): Promise<SquidexContent<T>> {
@@ -176,7 +177,7 @@ export class SquidexClient {
   /**
    * Get the current configuration
    */
-  getConfig(): SquidexClientConfig {
+  getConfig(): SquidexConfig {
     return { ...this.config };
   }
 }
