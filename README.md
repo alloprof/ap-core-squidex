@@ -6,6 +6,16 @@ TypeScript client library for Squidex CMS via ap-games-api.
 
 `@alloprof/squidex` is a TypeScript client SDK that provides a simple, type-safe interface to interact with Squidex CMS through the `ap-games-api` backend. This package is designed to be used by Alloprof frontend and backend applications.
 
+### Functional Pattern
+
+This package uses a functional approach similar to RxJS:
+- ✅ Configure once at application startup
+- ✅ Import functions directly where needed
+- ✅ Lightweight and simple
+- ✅ Easy to test with mocks
+- ✅ No dependency injection needed
+- ✅ Tree-shakeable
+
 ### Architecture
 
 ```
@@ -31,15 +41,16 @@ yarn add @alloprof/squidex
 ## Quick Start
 
 ```typescript
-import { SquidexClient } from '@alloprof/squidex';
+import { configure, getContent } from '@alloprof/squidex';
 
-// Initialize the client
-const client = new SquidexClient({
+// Configure once at application startup
+configure({
   apiBaseUrl: 'https://api-games.alloprof.ca',
+  app: 'ap-pronom-ei',
 });
 
-// Fetch content
-const content = await client.getContent('exercises', {
+// Use functions directly anywhere in your app
+const content = await getContent('exercises', {
   $top: 10,
   $filter: "data/difficulty/iv eq 'easy'",
 });
@@ -49,66 +60,115 @@ console.log(content.items);
 
 ## Configuration
 
-### SquidexClientConfig
+### Configuration Options
 
 ```typescript
-interface SquidexClientConfig {
+import { configure } from '@alloprof/squidex';
+
+configure({
   // Base URL of the ap-games-api instance (required)
-  apiBaseUrl: string;
+  apiBaseUrl: 'https://api-games.alloprof.ca',
+
+  // Squidex app name to use for all requests (required)
+  app: 'ap-pronom-ei',
 
   // Optional: Timeout for HTTP requests in milliseconds (default: 30000)
-  timeout?: number;
+  timeout: 30000,
 
   // Optional: Number of retry attempts (default: 3)
-  retries?: number;
+  retries: 3,
 
   // Optional: Delay between retries in milliseconds (default: 1000)
-  retryDelay?: number;
+  retryDelay: 1000,
 
   // Optional: Custom headers
-  headers?: Record<string, string>;
+  headers: {
+    'X-Custom-Header': 'value',
+  },
+});
+```
+
+### Configuration Utilities
+
+```typescript
+import { configure, isConfigured, resetConfiguration } from '@alloprof/squidex';
+
+// Check if already configured
+if (!isConfigured()) {
+  configure({
+    apiBaseUrl: 'https://api-games.alloprof.ca',
+    app: 'ap-pronom-ei'
+  });
 }
+
+// Reset configuration (useful for tests)
+resetConfiguration();
 ```
 
 ### Environment Examples
 
 **Local Development:**
 ```typescript
-const client = new SquidexClient({
+configure({
   apiBaseUrl: 'http://localhost:8200',
+  app: 'ap-pronom-ei',
 });
 ```
 
 **Staging:**
 ```typescript
-const client = new SquidexClient({
+configure({
   apiBaseUrl: 'https://api-games-staging.alloprof.ca',
+  app: 'ap-pronom-ei',
 });
 ```
 
 **Production:**
 ```typescript
-const client = new SquidexClient({
+configure({
   apiBaseUrl: 'https://api-games.alloprof.ca',
+  app: 'ap-pronom-ei',
 });
+```
+
+### Angular Integration
+
+```typescript
+// app.config.ts
+import { ApplicationConfig, provideAppInitializer } from '@angular/core';
+import { configure } from '@alloprof/squidex';
+import { environment } from './environments/environment';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideAppInitializer(() => {
+      configure(environment.squidex);
+    }),
+    // ... other providers
+  ],
+};
 ```
 
 ## Usage
 
-### Fetching Content
+#### Fetching Content
 
-#### Get all content from a schema
+**Get all content from a schema:**
 
 ```typescript
-const result = await client.getContent('exercises');
+import { getContent } from '@alloprof/squidex';
+
+const result = await getContent('exercises');
 console.log(result.total); // Total number of items
 console.log(result.items); // Array of content items
 ```
 
-#### Get content with filtering
+**Get content with filtering:**
 
 ```typescript
-const result = await client.getContent('exercises', {
+import { getContent } from '@alloprof/squidex';
+
+const result = await getContent('exercises', {
   $filter: "data/difficulty/iv eq 'easy'",
   $top: 10,
   $skip: 0,
@@ -116,20 +176,101 @@ const result = await client.getContent('exercises', {
 });
 ```
 
-#### Get a single content item by ID
+**Get a single content item by ID:**
 
 ```typescript
-const exercise = await client.getContentById('exercises', 'content-id-123');
+import { getContentById } from '@alloprof/squidex';
+
+const exercise = await getContentById('exercises', 'content-id-123');
 console.log(exercise.data);
 ```
 
-### Using QueryBuilder
-
-The `QueryBuilder` provides a fluent API for constructing OData queries:
+#### Creating Content
 
 ```typescript
-const query = client
-  .createQuery()
+import { createContent } from '@alloprof/squidex';
+
+interface ExerciseData {
+  title: { iv: string };
+  difficulty: { iv: string };
+  description: { iv: string };
+}
+
+const newExercise = await createContent<ExerciseData>(
+  'exercises',
+  {
+    title: { iv: 'New Math Exercise' },
+    difficulty: { iv: 'medium' },
+    description: { iv: 'Practice algebraic equations' },
+  },
+  {
+    publish: true, // Publish immediately
+  }
+);
+
+console.log(newExercise.id);
+```
+
+#### Updating Content
+
+```typescript
+import { updateContent } from '@alloprof/squidex';
+
+// Full update
+const updated = await updateContent(
+  'exercises',
+  'content-id-123',
+  {
+    title: { iv: 'Updated Title' },
+    difficulty: { iv: 'hard' },
+  }
+);
+
+// Partial update (PATCH)
+const patched = await updateContent(
+  'exercises',
+  'content-id-123',
+  { difficulty: { iv: 'hard' } },
+  { patch: true }
+);
+```
+
+#### Deleting Content
+
+```typescript
+import { deleteContent } from '@alloprof/squidex';
+
+// Soft delete
+await deleteContent('exercises', 'content-id-123');
+
+// Permanent delete
+await deleteContent('exercises', 'content-id-123', { permanent: true });
+```
+
+#### Content Status Management
+
+```typescript
+import { publishContent, unpublishContent, archiveContent, restoreContent } from '@alloprof/squidex';
+
+// Publish content
+await publishContent('exercises', 'content-id-123');
+
+// Unpublish content
+await unpublishContent('exercises', 'content-id-123');
+
+// Archive content
+await archiveContent('exercises', 'content-id-123');
+
+// Restore from archive
+await restoreContent('exercises', 'content-id-123');
+```
+
+#### Using QueryBuilder
+
+```typescript
+import { createQuery, getContent } from '@alloprof/squidex';
+
+const query = createQuery()
   .equals('data/difficulty/iv', 'easy')
   .contains('data/title/iv', 'math')
   .orderBy('created', 'desc')
@@ -137,7 +278,7 @@ const query = client
   .skip(0)
   .build();
 
-const result = await client.getContent('exercises', query);
+const result = await getContent('exercises', query);
 ```
 
 #### QueryBuilder Methods
@@ -156,106 +297,13 @@ const result = await client.getContent('exercises', query);
 - `search(query)` - Full-text search
 - `raw(expression)` - Add raw OData expression
 
-### Creating Content
-
-```typescript
-interface ExerciseData {
-  title: { iv: string };
-  difficulty: { iv: string };
-  description: { iv: string };
-}
-
-const newExercise = await client.createContent<ExerciseData>(
-  'exercises',
-  {
-    title: { iv: 'New Math Exercise' },
-    difficulty: { iv: 'medium' },
-    description: { iv: 'Practice algebraic equations' },
-  },
-  {
-    publish: true, // Publish immediately
-  }
-);
-
-console.log(newExercise.id);
-```
-
-### Updating Content
-
-#### Full update (PUT)
-
-```typescript
-const updated = await client.updateContent(
-  'exercises',
-  'content-id-123',
-  {
-    title: { iv: 'Updated Title' },
-    difficulty: { iv: 'hard' },
-  }
-);
-```
-
-#### Partial update (PATCH)
-
-```typescript
-const updated = await client.updateContent(
-  'exercises',
-  'content-id-123',
-  {
-    difficulty: { iv: 'hard' },
-  },
-  {
-    patch: true, // Use PATCH instead of PUT
-  }
-);
-```
-
-#### Update with version control
-
-```typescript
-const updated = await client.updateContent(
-  'exercises',
-  'content-id-123',
-  { difficulty: { iv: 'hard' } },
-  {
-    expectedVersion: 5, // Ensures you're updating the correct version
-  }
-);
-```
-
-### Deleting Content
-
-```typescript
-// Soft delete
-await client.deleteContent('exercises', 'content-id-123');
-
-// Permanent delete
-await client.deleteContent('exercises', 'content-id-123', {
-  permanent: true,
-});
-```
-
-### Content Status Management
-
-```typescript
-// Publish content
-await client.publishContent('exercises', 'content-id-123');
-
-// Unpublish content
-await client.unpublishContent('exercises', 'content-id-123');
-
-// Archive content
-await client.archiveContent('exercises', 'content-id-123');
-
-// Restore from archive
-await client.restoreContent('exercises', 'content-id-123');
-```
-
 ## TypeScript Support
 
 All methods support generic types for type-safe content data:
 
 ```typescript
+import { getContent, createContent } from '@alloprof/squidex';
+
 interface Exercise {
   title: { iv: string };
   difficulty: { iv: 'easy' | 'medium' | 'hard' };
@@ -264,14 +312,14 @@ interface Exercise {
 }
 
 // Type-safe fetching
-const result = await client.getContent<Exercise>('exercises');
+const result = await getContent<Exercise>('exercises');
 result.items.forEach((item) => {
   console.log(item.data.title.iv); // ✓ Type-safe
   console.log(item.data.difficulty.iv); // ✓ Type-safe, autocomplete works
 });
 
 // Type-safe creation
-const newExercise = await client.createContent<Exercise>('exercises', {
+const newExercise = await createContent<Exercise>('exercises', {
   title: { iv: 'New Exercise' },
   difficulty: { iv: 'easy' }, // ✓ Only 'easy', 'medium', 'hard' allowed
   description: { iv: 'Description' },
@@ -285,6 +333,7 @@ The package provides specific error types:
 
 ```typescript
 import {
+  getContentById,
   SquidexError,
   SquidexNotFoundError,
   SquidexValidationError,
@@ -293,7 +342,7 @@ import {
 } from '@alloprof/squidex';
 
 try {
-  const content = await client.getContentById('exercises', 'invalid-id');
+  const content = await getContentById('exercises', 'invalid-id');
 } catch (error) {
   if (error instanceof SquidexNotFoundError) {
     console.error('Content not found:', error.message);
@@ -305,35 +354,78 @@ try {
 }
 ```
 
-## Advanced Usage
+## Testing
 
-### Custom HTTP Client Configuration
+When testing code that uses this package, you can mock the functions using your testing framework:
+
+#### Jest Example
 
 ```typescript
-const client = new SquidexClient({
-  apiBaseUrl: 'https://api-games.alloprof.ca',
-  timeout: 60000, // 60 seconds
-  retries: 5,
-  retryDelay: 2000, // 2 seconds
-  headers: {
-    'X-Custom-Header': 'value',
-  },
+import * as squidexApi from '@alloprof/squidex';
+
+describe('ExerciseService', () => {
+  beforeEach(() => {
+    // Reset configuration before each test
+    squidexApi.resetConfiguration();
+    squidexApi.configure({
+      apiBaseUrl: 'http://localhost:8200',
+      app: 'ap-pronom-ei'
+    });
+  });
+
+  it('should fetch exercises', async () => {
+    const mockGetContent = jest.fn().mockResolvedValue({
+      items: [{ id: '1', data: { title: { iv: 'Test' } } }],
+      total: 1,
+    });
+
+    jest.spyOn(squidexApi, 'getContent').mockImplementation(mockGetContent);
+
+    const result = await squidexApi.getContent('exercises');
+
+    expect(mockGetContent).toHaveBeenCalledWith('exercises');
+    expect(result.items).toHaveLength(1);
+  });
 });
 ```
 
-### Accessing the HTTP Client
+#### Vitest Example
 
 ```typescript
-const httpClient = client.getHttpClient();
-const axiosInstance = httpClient.getAxiosInstance();
+import * as squidexApi from '@alloprof/squidex';
+import { vi } from 'vitest';
 
-// Make custom requests
-const response = await httpClient.get('/custom-endpoint');
+describe('ExerciseService', () => {
+  beforeEach(() => {
+    squidexApi.resetConfiguration();
+    squidexApi.configure({
+      apiBaseUrl: 'http://localhost:8200',
+      app: 'ap-pronom-ei'
+    });
+  });
+
+  it('should fetch exercises', async () => {
+    const mockData = {
+      items: [{ id: '1', data: { title: { iv: 'Test' } } }],
+      total: 1,
+    };
+
+    vi.spyOn(squidexApi, 'getContent').mockResolvedValue(mockData);
+
+    const result = await squidexApi.getContent('exercises');
+
+    expect(result.items).toHaveLength(1);
+  });
+});
 ```
+
+## Advanced Usage
 
 ### Pagination Example
 
 ```typescript
+import { getContent } from '@alloprof/squidex';
+
 async function getAllExercises() {
   const pageSize = 50;
   let skip = 0;
@@ -341,7 +433,7 @@ async function getAllExercises() {
   let hasMore = true;
 
   while (hasMore) {
-    const result = await client.getContent('exercises', {
+    const result = await getContent('exercises', {
       $top: pageSize,
       $skip: skip,
     });
@@ -357,24 +449,24 @@ async function getAllExercises() {
 
 ## API Reference
 
-### SquidexClient
+### Configuration Functions
 
-Main client class for interacting with Squidex CMS.
+- `configure(config: SquidexConfig): void` - Configure the global Squidex client
+- `isConfigured(): boolean` - Check if the client has been configured
+- `resetConfiguration(): void` - Reset the configuration (useful for testing)
 
-#### Methods
+### Content Functions
 
-- `getContent<T>(schema: string, query?: SquidexQuery): Promise<SquidexContentList<T>>`
-- `getContentById<T>(schema: string, id: string): Promise<SquidexContent<T>>`
-- `createContent<T>(schema: string, data: T, options?: CreateContentOptions): Promise<SquidexContent<T>>`
-- `updateContent<T>(schema: string, id: string, data: Partial<T>, options?: UpdateContentOptions): Promise<SquidexContent<T>>`
-- `deleteContent(schema: string, id: string, options?: DeleteContentOptions): Promise<void>`
-- `publishContent<T>(schema: string, id: string): Promise<SquidexContent<T>>`
-- `unpublishContent<T>(schema: string, id: string): Promise<SquidexContent<T>>`
-- `archiveContent<T>(schema: string, id: string): Promise<SquidexContent<T>>`
-- `restoreContent<T>(schema: string, id: string): Promise<SquidexContent<T>>`
-- `createQuery(): QueryBuilder`
-- `getHttpClient(): HttpClient`
-- `getConfig(): SquidexClientConfig`
+- `getContent<T>(schema: string, query?: SquidexQuery): Promise<SquidexContentList<T>>` - Fetch content from a schema
+- `getContentById<T>(schema: string, id: string): Promise<SquidexContent<T>>` - Fetch a single content item by ID
+- `createContent<T>(schema: string, data: T, options?: CreateContentOptions): Promise<SquidexContent<T>>` - Create new content
+- `updateContent<T>(schema: string, id: string, data: Partial<T>, options?: UpdateContentOptions): Promise<SquidexContent<T>>` - Update existing content
+- `deleteContent(schema: string, id: string, options?: DeleteContentOptions): Promise<void>` - Delete content
+- `publishContent<T>(schema: string, id: string): Promise<SquidexContent<T>>` - Publish content
+- `unpublishContent<T>(schema: string, id: string): Promise<SquidexContent<T>>` - Unpublish content
+- `archiveContent<T>(schema: string, id: string): Promise<SquidexContent<T>>` - Archive content
+- `restoreContent<T>(schema: string, id: string): Promise<SquidexContent<T>>` - Restore archived content
+- `createQuery(): QueryBuilder` - Create a new query builder instance
 
 ## Development
 

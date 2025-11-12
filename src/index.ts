@@ -1,16 +1,11 @@
-// Main client
-export { SquidexClient } from './client/squidex-client';
-export { HttpClient } from './client/http-client';
+// Configuration
+export { configure, isConfigured, resetConfiguration } from './global-config';
 
-// Services
-export { ContentService } from './services/content.service';
+// Content functions
+export * from './api';
 
 // Types
 export * from './types/config';
 export * from './types/content';
 export * from './types/query';
 export * from './types/error';
-
-// Utilities
-export { UrlBuilder } from './utils/url-builder';
-export { handleSquidexError, isRetryableError } from './utils/error-handler';

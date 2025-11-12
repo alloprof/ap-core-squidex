@@ -2,13 +2,20 @@
  * Configuration options for the Squidex client SDK
  * This client communicates with ap-games-api, not directly with Squidex
  */
-export interface SquidexClientConfig {
+export interface SquidexConfig {
   /**
    * Base URL of the ap-games-api instance
    * @example "https://api-games.alloprof.ca"
    * @example "http://localhost:8200"
    */
   apiBaseUrl: string;
+
+  /**
+   * Squidex app name to use for all requests
+   * @example "ap-pronom-ei"
+   * @example "exerciseurs"
+   */
+  app: string;
 
   /**
    * Optional timeout for HTTP requests in milliseconds
@@ -37,4 +44,4 @@ export interface SquidexClientConfig {
 /**
  * Environment type for configuration
  */
-export type ApiEnvironment = 'local' | 'staging' | 'production';
+export type ApiEnvironment = 'local' | 'staging' | 'production' | 'gustave';

@@ -1,5 +1,5 @@
 import { ContentService } from '../services/content.service';
-import { SquidexClientConfig } from '../types/config';
+import { SquidexConfig } from '../types/config';
 import {
   SquidexContent,
   SquidexContentList,
@@ -16,13 +16,13 @@ import { HttpClient } from './http-client';
 export class SquidexClient {
   private httpClient: HttpClient;
   private contentService: ContentService;
-  private config: SquidexClientConfig;
+  private config: SquidexConfig;
 
   /**
    * Create a new Squidex client instance
    * @param config - Client configuration
    */
-  constructor(config: SquidexClientConfig) {
+  constructor(config: SquidexConfig) {
     this.config = config;
     this.httpClient = new HttpClient(config);
     this.contentService = new ContentService(this.httpClient);
@@ -176,7 +176,7 @@ export class SquidexClient {
   /**
    * Get the current configuration
    */
-  getConfig(): SquidexClientConfig {
+  getConfig(): SquidexConfig {
     return { ...this.config };
   }
 }
