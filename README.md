@@ -108,7 +108,7 @@ configure({
 **Staging:**
 ```typescript
 configure({
-  apiBaseUrl: 'https://api.alloprof-staging.ca/games',
+  apiBaseUrl: 'https://api.alloprof-staging.qc.ca/games',
   app: 'ap-pronom-ei',
 });
 ```
