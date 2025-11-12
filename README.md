@@ -6,16 +6,6 @@ TypeScript client library for Squidex CMS via ap-games-api.
 
 `@alloprof/squidex` is a TypeScript client SDK that provides a simple, type-safe interface to interact with Squidex CMS through the `ap-games-api` backend. This package is designed to be used by Alloprof frontend and backend applications.
 
-### Functional Pattern
-
-This package uses a functional approach similar to RxJS:
-- ✅ Configure once at application startup
-- ✅ Import functions directly where needed
-- ✅ Lightweight and simple
-- ✅ Easy to test with mocks
-- ✅ No dependency injection needed
-- ✅ Tree-shakeable
-
 ### Architecture
 
 ```
