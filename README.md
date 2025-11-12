@@ -118,7 +118,7 @@ configure({
 **Staging:**
 ```typescript
 configure({
-  apiBaseUrl: 'https://api-games-staging.alloprof.ca',
+  apiBaseUrl: 'https://api.alloprof-staging.ca/games',
   app: 'ap-pronom-ei',
 });
 ```
@@ -126,7 +126,7 @@ configure({
 **Production:**
 ```typescript
 configure({
-  apiBaseUrl: 'https://api-games.alloprof.ca',
+  apiBaseUrl: 'https://api.alloprof.qc.ca/games',
   app: 'ap-pronom-ei',
 });
 ```
@@ -352,72 +352,6 @@ try {
     console.error('Squidex error:', error.statusCode, error.message);
   }
 }
-```
-
-## Testing
-
-When testing code that uses this package, you can mock the functions using your testing framework:
-
-#### Jest Example
-
-```typescript
-import * as squidexApi from '@alloprof/squidex';
-
-describe('ExerciseService', () => {
-  beforeEach(() => {
-    // Reset configuration before each test
-    squidexApi.resetConfiguration();
-    squidexApi.configure({
-      apiBaseUrl: 'http://localhost:8200',
-      app: 'ap-pronom-ei'
-    });
-  });
-
-  it('should fetch exercises', async () => {
-    const mockGetContent = jest.fn().mockResolvedValue({
-      items: [{ id: '1', data: { title: { iv: 'Test' } } }],
-      total: 1,
-    });
-
-    jest.spyOn(squidexApi, 'getContent').mockImplementation(mockGetContent);
-
-    const result = await squidexApi.getContent('exercises');
-
-    expect(mockGetContent).toHaveBeenCalledWith('exercises');
-    expect(result.items).toHaveLength(1);
-  });
-});
-```
-
-#### Vitest Example
-
-```typescript
-import * as squidexApi from '@alloprof/squidex';
-import { vi } from 'vitest';
-
-describe('ExerciseService', () => {
-  beforeEach(() => {
-    squidexApi.resetConfiguration();
-    squidexApi.configure({
-      apiBaseUrl: 'http://localhost:8200',
-      app: 'ap-pronom-ei'
-    });
-  });
-
-  it('should fetch exercises', async () => {
-    const mockData = {
-      items: [{ id: '1', data: { title: { iv: 'Test' } } }],
-      total: 1,
-    };
-
-    vi.spyOn(squidexApi, 'getContent').mockResolvedValue(mockData);
-
-    const result = await squidexApi.getContent('exercises');
-
-    expect(result.items).toHaveLength(1);
-  });
-});
-```
 
 ## Advanced Usage
 
